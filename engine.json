@@ -4,14 +4,17 @@
   "engineFactory": "org.template.vanilla.VanillaEngine",
   "datasource": {
     "params" : {
-      "appName": "INVALID_APP_NAME"
+      "appName": "BFGS"
     }
   },
   "algorithms": [
     {
       "name": "algo",
       "params": {
-        "mult" : 1
+        "numCorrections": 10,
+        "convergenceTol": 0.0000000001,
+        "maxNumIterations": 50000,
+        "regParam": 0.0,
       }
     }
   ]
