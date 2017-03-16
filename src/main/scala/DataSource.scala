@@ -1,5 +1,8 @@
 package org.template.vanilla
 
+import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.mllib.linalg.Vectors
+
 import org.apache.predictionio.controller.PDataSource
 import org.apache.predictionio.controller.EmptyEvaluationInfo
 import org.apache.predictionio.controller.EmptyActualResult
@@ -25,20 +28,19 @@ class DataSource(val dsp: DataSourceParams)
   def readTraining(sc: SparkContext): TrainingData = {
 
     // read all events of EVENT involving ENTITY_TYPE and TARGET_ENTITY_TYPE
-    val eventsRDD: RDD[Event] = PEventStore.find(
-      appName = dsp.appName,
-      entityType = Some("ENTITY_TYPE"),
-      eventNames = Some(List("EVENT")),
-      targetEntityType = Some(Some("TARGET_ENTITY_TYPE")))(sc)
+    val labeledPoints : RDD[LabeledPoint]  = PEventStore.find(appName = dsp.appName)(sc).map(event =>
+      LabeledPoint(
+        event.properties.get[Double]("y"),
+        Vectors.dense(Array(
+            event.properties.get[Double]("x1"),
+            event.properties.get[Double]("x2")
+        )))).cache()
 
-    new TrainingData(eventsRDD)
+    new TrainingData(labeledPoints)
   }
 }
 
 class TrainingData(
-  val events: RDD[Event]
-) extends Serializable {
-  override def toString = {
-    s"events: [${events.count()}] (${events.take(2).toList}...)"
-  }
-}
+  val labeledPoints: RDD[LabeledPoint]
+) extends Serializable
+
